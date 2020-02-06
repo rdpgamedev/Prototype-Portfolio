@@ -54,13 +54,15 @@ public class ProjectButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         asyncOp.allowSceneActivation = false;
 
         // Start Transition Effect
-
+        yield return new  WaitForSeconds(0.5f);
         while (!asyncOp.isDone)
         {
+            Debug.Log("Scene Loading: . . . " + asyncOp.progress * 100 + "%");
             // Check Animator State if Transition is over
 
             if (asyncOp.progress >= 0.9f)
             {
+                Debug.Log("Scene Loading: . . . done");
                 asyncOp.allowSceneActivation = true;
             }
             yield return null;
