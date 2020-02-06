@@ -1,14 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class ProjectButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public ProjectDescription description;
+    public string sceneName;
     public float maxScale = 2f;
     public float transitionLength = 0.5f;
+    
 
     Vector3 baseScale;
     Vector3 endScale;
@@ -17,6 +20,11 @@ public class ProjectButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public void Awake()
     {
         description = GetComponentInChildren<ProjectDescription>();
+    }
+
+    public void LoadButton()
+    {
+        StartCoroutine(LoadScene());
     }
 
     public void Start()
@@ -37,6 +45,26 @@ public class ProjectButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         StopAllCoroutines();
         StartCoroutine(ScaleDown());
         StartCoroutine(description.SlideOut(transitionLength));
+    }
+
+    IEnumerator LoadScene()
+    {
+        // Load Scene in background and wait for activation
+        AsyncOperation asyncOp = SceneManager.LoadSceneAsync(sceneName);
+        asyncOp.allowSceneActivation = false;
+
+        // Start Transition Effect
+
+        while (!asyncOp.isDone)
+        {
+            // Check Animator State if Transition is over
+
+            if (asyncOp.progress >= 0.9f)
+            {
+                asyncOp.allowSceneActivation = true;
+            }
+            yield return null;
+        }
     }
 
     IEnumerator ScaleUp ()

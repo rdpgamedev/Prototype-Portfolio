@@ -17,8 +17,7 @@ public class ProjectDescription : MonoBehaviour
     Vector3 inPos;
 
     Color panelColor;
-    Color32 textColor;   
-
+    Color32 textColor;
     void Awake()
     {
         panel = GetComponent<Image>();
