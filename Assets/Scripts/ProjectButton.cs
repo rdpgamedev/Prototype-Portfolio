@@ -8,11 +8,12 @@ using UnityEngine.SceneManagement;
 public class ProjectButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public ProjectDescription description;
+    public Animator wipeTransition;
     public string sceneName;
     public float maxScale = 2f;
     public float transitionLength = 0.5f;
     
-
+    bool isLoading = false;
     Vector3 baseScale;
     Vector3 endScale;
     float tScale = 0f;
@@ -42,31 +43,25 @@ public class ProjectButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        StopAllCoroutines();
+        if (!isLoading) StopAllCoroutines();
         StartCoroutine(ScaleDown());
         StartCoroutine(description.SlideOut(transitionLength));
     }
 
     IEnumerator LoadScene()
     {
-        // Load Scene in background and wait for activation
-        AsyncOperation asyncOp = SceneManager.LoadSceneAsync(sceneName);
-        asyncOp.allowSceneActivation = false;
+        // Show PointerEvents that SceneLoading is occuring
+        isLoading = true;
 
         // Start Transition Effect
-        yield return new  WaitForSeconds(0.5f);
-        while (!asyncOp.isDone)
-        {
-            Debug.Log("Scene Loading: . . . " + asyncOp.progress * 100 + "%");
-            // Check Animator State if Transition is over
+        wipeTransition.SetTrigger("Start");
 
-            if (asyncOp.progress >= 0.9f)
-            {
-                Debug.Log("Scene Loading: . . . done");
-                asyncOp.allowSceneActivation = true;
-            }
-            yield return null;
-        }
+        // Wait for transition to finish
+        yield return new WaitForSeconds(0.66f);
+
+        // Load Scene
+        SceneManager.LoadScene(sceneName);
+        isLoading = false;
     }
 
     IEnumerator ScaleUp ()
