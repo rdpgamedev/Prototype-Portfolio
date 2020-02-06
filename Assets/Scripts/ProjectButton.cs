@@ -6,12 +6,18 @@ using UnityEngine.EventSystems;
 
 public class ProjectButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
+    public ProjectDescription description;
     public float maxScale = 2f;
     public float transitionLength = 0.5f;
 
     Vector3 baseScale;
     Vector3 endScale;
     float tScale = 0f;
+
+    public void Awake()
+    {
+        description = GetComponentInChildren<ProjectDescription>();
+    }
 
     public void Start()
     {
@@ -23,12 +29,14 @@ public class ProjectButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     {
         StopAllCoroutines();
         StartCoroutine(ScaleUp());
+        StartCoroutine(description.SlideIn(transitionLength));
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         StopAllCoroutines();
         StartCoroutine(ScaleDown());
+        StartCoroutine(description.SlideOut(transitionLength));
     }
 
     IEnumerator ScaleUp ()
