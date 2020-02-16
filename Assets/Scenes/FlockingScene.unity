@@ -198,8 +198,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 44718715}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: 0.101828724, y: -0, z: -0, w: 0.994802}
+  m_LocalPosition: {x: 0, y: 22.2, z: -80.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2140519810}
@@ -207,7 +207,7 @@ Transform:
   - {fileID: 2043470431}
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 11.689, y: 0, z: 0}
 --- !u!114 &44718719
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -644,12 +644,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 605feb426fb8fcd42ba0cf6f833af436, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bird: {fileID: 6337234905726820525, guid: a31c846ce225ded4a95c4e99ccb8b393, type: 3}
-  birdCount: 100
-  boundsWidth: 8
-  boundsHeight: 5
-  boundsDepth: 8
-  distNeighbor: 0.5
+  boid: {fileID: 6337234905726820525, guid: a31c846ce225ded4a95c4e99ccb8b393, type: 3}
+  boidCount: 100
+  boundsWidth: 50
+  boundsHeight: 30
+  boundsDepth: 50
+  distNeighbor: 1
 --- !u!4 &1533681525
 Transform:
   m_ObjectHideFlags: 0
