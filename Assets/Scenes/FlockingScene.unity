@@ -646,10 +646,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   boid: {fileID: 6337234905726820525, guid: a31c846ce225ded4a95c4e99ccb8b393, type: 3}
   boidCount: 100
+  MAX_ROT_SPEED: 2
   boundsWidth: 50
   boundsHeight: 30
   boundsDepth: 50
-  distNeighbor: 1
+  distNeighbor: 10
 --- !u!4 &1533681525
 Transform:
   m_ObjectHideFlags: 0

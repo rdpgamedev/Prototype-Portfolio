@@ -11,6 +11,8 @@ public class FlockManager : MonoBehaviour
 {
     public Transform boid;
     public int boidCount = 100;
+    public float MAX_ROT_SPEED;
+    public float AVG_SPEED;
     public float boundsWidth;
     public float boundsHeight;
     public float boundsDepth;
@@ -43,7 +45,7 @@ public class FlockManager : MonoBehaviour
                             UnityEngine.Random.rotation);
                             
             boidTransforms.Add(boidTransform);
-            boidSpeed[i] = UnityEngine.Random.Range(0.5f, 1.5f);
+            boidSpeed[i] = UnityEngine.Random.Range(AVG_SPEED - 1.0f, AVG_SPEED + 1.0f);
         }
     }
 
@@ -66,6 +68,7 @@ public class FlockManager : MonoBehaviour
             boidPos = posBuffer,
             boidRot = rotBuffer,
             boidSpeed = speedBuffer,
+            rotSpeed = MAX_ROT_SPEED,
             deltaTime = Time.deltaTime,
             distNeighbor = distNeighbor,
             boidCount = boidCount
@@ -105,6 +108,7 @@ public class FlockManager : MonoBehaviour
         [ReadOnly] public NativeArray<Vector3> boidPos;
         [ReadOnly] public NativeArray<Quaternion> boidRot;
         [ReadOnly] public NativeArray<float> boidSpeed;
+        [ReadOnly] public float rotSpeed;
         [ReadOnly] public float deltaTime;
         [ReadOnly] public float distNeighbor;
         [ReadOnly] public int boidCount;
@@ -115,10 +119,10 @@ public class FlockManager : MonoBehaviour
         // https://software.intel.com/en-us/articles/an-approach-to-parallel-processing-with-unity
         public void Execute(int index, TransformAccess transform)
         {
-            int flockSize = 0;
-            Vector3 flockCenter = Vector3.zero;
-            float flockSpeed = 0f;
-            Vector3 flockForward = Vector3.zero;
+            int flockSize = 1;
+            Vector3 flockCenter = transform.position;
+            float flockSpeed = boidSpeed[index];
+            Vector3 flockForward = (transform.rotation * Vector3.forward).normalized;
 
             // Iterate through boids looking for flock
             for (int b = 0; b < boidCount; ++b)
@@ -127,6 +131,7 @@ public class FlockManager : MonoBehaviour
                 {
                     Vector3 otherPos = boidPos[b];
                     Quaternion otherRot = boidRot[b];
+                    float otherSpeed = boidSpeed[b];
                     if (PossibleNeighbor(transform.position.x, otherPos.x, distNeighbor))
                     {
                         float dist = Vector3.Distance(otherPos, transform.position);
@@ -134,13 +139,28 @@ public class FlockManager : MonoBehaviour
                         {
                             // Add to flock data
                             flockSize++;
+                            // Cohesion
                             flockCenter += otherPos;
-                            flockSpeed += boidSpeed[b];
+                            flockSpeed += otherSpeed;
+                            
                         }
                     }
                 }
             }
-            // Move boid forward according to speed
+            // Rotate boid toward new direction
+            Vector3 direction = (transform.rotation * Vector3.forward);
+            if (flockSize > 1)
+            {
+                Debug.Log("Flock Size: " + flockSize);
+                Vector3 centerDirection = (flockCenter/flockSize - transform.position).normalized;
+                direction = Vector3.RotateTowards(direction, centerDirection, rotSpeed * deltaTime, 0.0f);
+                transform.rotation = Quaternion.LookRotation(direction);
+            }
+            
+            // Approach flock speed
+            tranSpeed[index] += (flockSpeed/flockSize - tranSpeed[index]) * 0.5f;
+
+            // Move boid forward according to new forward direction and speed
             transform.position += tranSpeed[index] * deltaTime * (transform.rotation * Vector3.forward).normalized;
         }
 
