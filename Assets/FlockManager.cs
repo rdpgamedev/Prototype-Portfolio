@@ -9,6 +9,8 @@ using Unity.Mathematics;
 
 public class FlockManager : MonoBehaviour
 {
+    public static FlockManager instance;
+
     public Transform boid;
     public int boidCount = 100;
     public float MAX_ROT_SPEED;
@@ -25,6 +27,11 @@ public class FlockManager : MonoBehaviour
     NativeArray<Quaternion> rotBuffer;
     NativeArray<float> speedBuffer;
 
+    void Awake()
+    {
+        instance = this;
+    }
+
     void Start()
     {
         //boidTransforms = new Transform[boidCount];
@@ -39,9 +46,9 @@ public class FlockManager : MonoBehaviour
         {
             Transform boidTransform = 
                 Instantiate(boid, 
-                            new Vector3(UnityEngine.Random.Range(-boundsWidth, boundsWidth), 
-                                        UnityEngine.Random.Range(-boundsHeight, boundsHeight),
-                                        UnityEngine.Random.Range(-boundsDepth, boundsDepth)),
+                            new Vector3(UnityEngine.Random.Range(-boundsWidth/2f, boundsWidth/2f), 
+                                        UnityEngine.Random.Range(-boundsHeight/2f, boundsHeight/2f),
+                                        UnityEngine.Random.Range(-boundsDepth/2f, boundsDepth/2f)),
                             UnityEngine.Random.rotation);
                             
             boidTransforms.Add(boidTransform);
@@ -85,6 +92,13 @@ public class FlockManager : MonoBehaviour
         posBuffer.Dispose();
         rotBuffer.Dispose();
         speedBuffer.Dispose();
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        // Draw cube to show bounds volume
+        Gizmos.color = new Color(0, 1, 0, 0.3f);
+        Gizmos.DrawCube(transform.position, new Vector3(boundsWidth, boundsHeight, boundsDepth));
     }
 
     public struct CopyBoidStatesJob : IJobParallelForTransform
@@ -151,7 +165,6 @@ public class FlockManager : MonoBehaviour
             Vector3 direction = (transform.rotation * Vector3.forward);
             if (flockSize > 1)
             {
-                Debug.Log("Flock Size: " + flockSize);
                 Vector3 centerDirection = (flockCenter/flockSize - transform.position).normalized;
                 direction = Vector3.RotateTowards(direction, centerDirection, rotSpeed * deltaTime, 0.0f);
                 transform.rotation = Quaternion.LookRotation(direction);
@@ -160,8 +173,21 @@ public class FlockManager : MonoBehaviour
             // Approach flock speed
             tranSpeed[index] += (flockSpeed/flockSize - tranSpeed[index]) * 0.5f;
 
+            // Calculate new position
+            Vector3 newPos = tranSpeed[index] * deltaTime * (transform.rotation * Vector3.forward).normalized + transform.position;
+
+            // Check if newPos is in bounds
+            if (!PositionInBounds(newPos))
+            {
+                // newPos is not in bounds so rotate boid toward origin and calculate new position
+                Vector3 originDirection = Vector3.zero - transform.position;
+                direction = Vector3.RotateTowards(direction, originDirection, rotSpeed * deltaTime, 0.0f);
+                transform.rotation = Quaternion.LookRotation(direction);
+                newPos = tranSpeed[index] * deltaTime * (transform.rotation * Vector3.forward).normalized + transform.position;
+            }
+
             // Move boid forward according to new forward direction and speed
-            transform.position += tranSpeed[index] * deltaTime * (transform.rotation * Vector3.forward).normalized;
+            transform.position = newPos;
         }
 
         bool Neighbor(Vector3 othFwd, Vector3 curFwd, float dist, float neighborDist)
@@ -170,6 +196,18 @@ public class FlockManager : MonoBehaviour
             float dotProduct = Vector3.Dot(othFwd, curFwd);
             float scale = dotProduct/2f + 1f; // Range is now 0.5 to 1.5
             return (dist < neighborDist * scale);
+        }
+
+        bool PositionInBounds(Vector3 position)
+        {
+            FlockManager manager = FlockManager.instance;
+            
+            return (position.x <  manager.boundsWidth/2f
+                 && position.x > -manager.boundsWidth/2f
+                 && position.y <  manager.boundsHeight/2f
+                 && position.y > -manager.boundsHeight/2f
+                 && position.z <  manager.boundsDepth/2f
+                 && position.z > -manager.boundsDepth/2f);
         }
 
         bool PossibleNeighbor(float x, float otherx, float dist)
