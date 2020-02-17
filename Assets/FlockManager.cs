@@ -19,6 +19,7 @@ public class FlockManager : MonoBehaviour
     public float boundsHeight;
     public float boundsDepth;
     public float distNeighbor = 1f;
+    public float MIN_DIST;
 
     //Transform[] boidTransforms;
     TransformAccessArray boidTransforms;
@@ -78,6 +79,7 @@ public class FlockManager : MonoBehaviour
             rotSpeed = MAX_ROT_SPEED,
             deltaTime = Time.deltaTime,
             distNeighbor = distNeighbor,
+            minDist = MIN_DIST,
             boidCount = boidCount
         };
 
@@ -125,6 +127,7 @@ public class FlockManager : MonoBehaviour
         [ReadOnly] public float rotSpeed;
         [ReadOnly] public float deltaTime;
         [ReadOnly] public float distNeighbor;
+        [ReadOnly] public float minDist;
         [ReadOnly] public int boidCount;
         
         // Implements this Flocking Algorithm:
@@ -137,6 +140,7 @@ public class FlockManager : MonoBehaviour
             Vector3 flockCenter = transform.position;
             float flockSpeed = boidSpeed[index];
             Vector3 flockForward = (transform.rotation * Vector3.forward).normalized;
+            Vector3 avoidVector = new Vector3();
 
             // Iterate through boids looking for flock
             for (int b = 0; b < boidCount; ++b)
@@ -157,20 +161,25 @@ public class FlockManager : MonoBehaviour
                             flockCenter += otherPos;
                             flockSpeed += otherSpeed;
                             // Alignment
-                            flockForward += (otherRot * Vector3.forward).normalized;
-                            
+                            flockForward += (otherRot * Vector3.forward).normalized;                                                     
+                        }
+
+                        // Separation
+                        if (dist <= minDist)
+                        {
+                            avoidVector += (transform.position - otherPos).normalized / dist;
                         }
                     }
                 }
             }
-            
+
             // Rotate boid toward new direction
             Vector3 direction = (transform.rotation * Vector3.forward);
             if (flockSize > 1)
             {
                 Vector3 centerDirection = (flockCenter/flockSize - transform.position).normalized;
                 Vector3 flockDirection = (flockForward/flockSize).normalized;
-                Vector3 newDirection = centerDirection + flockDirection;
+                Vector3 newDirection = centerDirection + flockDirection + avoidVector;
                 newDirection.Normalize();
                 direction = Vector3.RotateTowards(direction, newDirection, rotSpeed * deltaTime, 0.0f);
                 transform.rotation = Quaternion.LookRotation(direction);
