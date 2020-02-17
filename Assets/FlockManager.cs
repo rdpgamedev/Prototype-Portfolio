@@ -156,17 +156,23 @@ public class FlockManager : MonoBehaviour
                             // Cohesion
                             flockCenter += otherPos;
                             flockSpeed += otherSpeed;
+                            // Alignment
+                            flockForward += (otherRot * Vector3.forward).normalized;
                             
                         }
                     }
                 }
             }
+            
             // Rotate boid toward new direction
             Vector3 direction = (transform.rotation * Vector3.forward);
             if (flockSize > 1)
             {
                 Vector3 centerDirection = (flockCenter/flockSize - transform.position).normalized;
-                direction = Vector3.RotateTowards(direction, centerDirection, rotSpeed * deltaTime, 0.0f);
+                Vector3 flockDirection = (flockForward/flockSize).normalized;
+                Vector3 newDirection = centerDirection + flockDirection;
+                newDirection.Normalize();
+                direction = Vector3.RotateTowards(direction, newDirection, rotSpeed * deltaTime, 0.0f);
                 transform.rotation = Quaternion.LookRotation(direction);
             }
             

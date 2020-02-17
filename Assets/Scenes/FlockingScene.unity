@@ -645,7 +645,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boid: {fileID: 6337234905726820525, guid: a31c846ce225ded4a95c4e99ccb8b393, type: 3}
-  boidCount: 100
+  boidCount: 200
   MAX_ROT_SPEED: 3
   AVG_SPEED: 10
   boundsWidth: 100
